@@ -1,0 +1,42 @@
+{
+  "name": "pgvector-demo",
+  "version": "1.0.0",
+  "description": "��#\u0000 \u0000p\u0000g\u0000v\u0000e\u0000c\u0000t\u0000o\u0000r\u0000-\u0000d\u0000e\u0000m\u0000o\u0000\r\u0000 \u0000",
+  "main": "index.js",
+  "scripts": {
+    "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@nestjs/common": "^11.1.27",
+    "@nestjs/core": "^11.1.27",
+    "@nestjs/platform-express": "^11.1.27",
+    "@nestjs/swagger": "^11.4.4",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
+    "pgvector": "^0.3.0",
+    "postgres": "^3.4.9",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.23",
+    "@nestjs/schematics": "^11.1.0",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.0.1",
+    "drizzle-kit": "^0.31.10",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
+  }
+}
