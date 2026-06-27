@@ -12,7 +12,7 @@ export class DocumentsController {
   @ApiOperation({ summary: 'Gera embedding de um texto e salva no banco' })
   @ApiResponse({ status: 201, description: 'Texto e vetor inseridos com sucesso.' })
   async ingest(@Body() body: IngestDto) {
-    return this.documentsService.ingest(body.title, body.content);
+    return this.documentsService.ingest(body);
   }
 
   @Post('search')
