@@ -1,7 +1,9 @@
 import {
+  BadRequestException,
   Inject,
   Injectable,
   InternalServerErrorException,
+  Logger,
 } from "@nestjs/common";
 import { GoogleGenAI } from "@google/genai";
 import { IngestDto } from "./dto/documents.dto";
@@ -13,6 +15,7 @@ import { cosineDistance, desc, sql } from "drizzle-orm";
 @Injectable()
 export class DocumentsService {
   private genAI: GoogleGenAI;
+  private readonly logger = new Logger(DocumentsService.name);
 
   constructor(
     @Inject(DB_CONNECTION)
@@ -31,20 +34,41 @@ export class DocumentsService {
 
   async ingest(body: IngestDto) {
     const { title, content } = body;
-    if (!title || !content) {
-      throw new Error("Título e conteúdo são obrigatórios");
-    }
-    const result = await this.genAI.models.embedContent({
-      model: "gemini-embedding-2",
-      contents: content,
-      config: { outputDimensionality: 768 },
-    });
 
-    const embedding = result.embeddings[0].values;
-    await this.db
-      .insert(schema.documents)
-      .values({ title, content, embedding });
-    return { message: "Embedding inserido com sucesso!" };
+    if (!title || !content) {
+      throw new BadRequestException("Título e conteúdo são obrigatórios");
+    }
+
+    try {
+      const result = await this.genAI.models.embedContent({
+        model: "gemini-embedding-2",
+        contents: content,
+        config: { outputDimensionality: 768 },
+      });
+
+      const embedding = result.embeddings[0].values;
+
+      await this.db
+        .insert(schema.documents)
+        .values({ title, content, embedding });
+
+      return { message: "Embedding inserido com sucesso!" };
+    } catch (error) {
+      if (error instanceof Error) {
+        this.logger.error(
+          `Falha ao ingerir documento '${title}': ${error.message}`,
+          error.stack,
+        );
+      } else {
+        this.logger.error(
+          `Falha ao ingerir documento '${title}': ${String(error)}`,
+        );
+      }
+
+      throw new InternalServerErrorException(
+        "Não foi possível processar e salvar o documento no momento. Tente novamente mais tarde.",
+      );
+    }
   }
 
   async search(query: string) {
