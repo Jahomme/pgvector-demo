@@ -2,16 +2,13 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
-  NotImplementedException,
 } from "@nestjs/common";
-import { db } from "../db";
-import { documents } from "../db/schema";
 import { GoogleGenAI } from "@google/genai";
 import { IngestDto } from "./dto/documents.dto";
 import { DB_CONNECTION } from "../db/db.module";
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import * as schema from "../db/schema";
-// import { cosineDistance, desc, sql } from 'drizzle-orm';
+import { cosineDistance, desc, sql } from "drizzle-orm";
 
 @Injectable()
 export class DocumentsService {
@@ -55,11 +52,26 @@ export class DocumentsService {
       throw new Error("Query é obrigatória");
     }
 
-    // TODO: Implementar a lógica de conversão da query em embedding e a busca por similaridade
-    // Siga as instruções no arquivo tasks/03_busca_vetorial.md
+    const result = await this.genAI.models.embedContent({
+      model: "gemini-embedding-2",
+      contents: query,
+      config: { outputDimensionality: 768 },
+    });
 
-    throw new NotImplementedException(
-      "A busca ainda não foi implementada pela dupla!",
-    );
+    const queryEmbedding = result.embeddings[0].values;
+    const similarity = sql<number>`1 - (${cosineDistance(schema.documents.embedding, queryEmbedding)})`;
+
+    const documents = await this.db
+      .select({
+        id: schema.documents.id,
+        title: schema.documents.title,
+        content: schema.documents.content,
+        similarity,
+      })
+      .from(schema.documents)
+      .orderBy(desc(similarity))
+      .limit(5);
+
+    return documents;
   }
 }
