@@ -17,7 +17,15 @@ export class IngestDto {
 export class SearchDto {
   @ApiProperty({
     example: 'Quero um celular bom para fotos.',
-    description: 'Pergunta para buscar no banco via distância de cosseno.',
+    description: 'Pergunta para buscar no banco via distância de cosseno (busca semântica).',
+  })
+  query: string;
+}
+
+export class FtsSearchDto {
+  @ApiProperty({
+    example: 'celular fotografia',
+    description: 'Palavras-chave para buscar via Full Text Search nativo do PostgreSQL (ts_vector).',
   })
   query: string;
 }

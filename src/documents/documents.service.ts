@@ -4,6 +4,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotImplementedException,
 } from "@nestjs/common";
 import { GoogleGenAI } from "@google/genai";
 import { IngestDto } from "./dto/documents.dto";
@@ -48,9 +49,15 @@ export class DocumentsService {
 
       const embedding = result.embeddings[0].values;
 
+      // Insere o documento com embedding E gera o tsvector automaticamente usando to_tsvector
       await this.db
         .insert(schema.documents)
-        .values({ title, content, embedding });
+        .values({
+          title,
+          content,
+          embedding,
+          searchVector: sql`setweight(to_tsvector('portuguese_unaccent', ${title}), 'A') || setweight(to_tsvector('portuguese_unaccent', ${content}), 'B')`,
+        });
 
       return { message: "Embedding inserido com sucesso!" };
     } catch (error) {
@@ -97,5 +104,64 @@ export class DocumentsService {
       .limit(5);
 
     return documents;
+  }
+
+  async ftsSearch(query: string) {
+    if (!query) {
+      throw new BadRequestException("Query é obrigatória");
+    }
+
+    try {
+      const tsQuery = sql`plainto_tsquery('portuguese_unaccent', ${query})`;
+
+      const results = await this.db
+        .select({
+          id: schema.documents.id,
+          title: schema.documents.title,
+          content: schema.documents.content,
+          rank: sql<number>`ts_rank(${schema.documents.searchVector}, ${tsQuery})`,
+        })
+        .from(schema.documents)
+        .where(sql`${schema.documents.searchVector} @@ ${tsQuery}`)
+        .orderBy(sql`ts_rank(${schema.documents.searchVector}, ${tsQuery}) DESC`)
+        .limit(5);
+
+      return results;
+    } catch (error) {
+      if (error instanceof Error) {
+        this.logger.error(
+          `Falha na busca Full Text Search: ${error.message}`,
+          error.stack,
+        );
+      }
+
+      throw new InternalServerErrorException(
+        "Não foi possível realizar a busca Full Text Search.",
+      );
+    }
+  }
+
+  async findAll() {
+    try {
+      const results = await this.db
+        .select({
+          id: schema.documents.id,
+          title: schema.documents.title,
+          content: schema.documents.content,
+        })
+        .from(schema.documents);
+
+      return results;
+    } catch (error) {
+      if (error instanceof Error) {
+        this.logger.error(
+          `Falha ao listar documentos: ${error.message}`,
+          error.stack,
+        );
+      }
+      throw new InternalServerErrorException(
+        "Não foi possível buscar os registros no banco.",
+      );
+    }
   }
 }

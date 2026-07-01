@@ -37,7 +37,13 @@ Use o Drizzle ORM para empurrar a estrutura de tabelas (Schema) para o banco de 
 npx drizzle-kit push
 ```
 
-### 5. Iniciar a API NestJS
+### 5. Popular o Banco com Dados de Teste (Seed)
+Rode o script de seed para limpar e popular o banco automaticamente com itens de exemplo (celulares, notebooks, fone bluetooth, etc.) e já gerar os respectivos embeddings deles através da API do Gemini:
+```bash
+npm run db:seed
+```
+
+### 6. Iniciar a API NestJS
 Por fim, inicie o servidor da API em modo de desenvolvimento:
 ```bash
 npm run start:dev
