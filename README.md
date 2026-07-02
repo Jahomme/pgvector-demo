@@ -57,8 +57,3 @@ Com a aplicação rodando, não é necessário usar Postman ou Insomnia. Basta a
 👉 **[http://localhost:3000/api/docs](http://localhost:3000/api/docs)**
 
 Lá você encontrará a interface interativa com a documentação para testar as rotas de Ingestão (`POST /api/documents`) e de Busca Vetorial (`POST /api/documents/search`).
-
----
-
-## 🛠️ Sobre a Pasta de Tarefas
-Dentro da pasta `tasks/`, há instruções passo a passo para a dupla realizar a implementação final das rotas de integração, redação do relatório técnico e roteiro do vídeo de apresentação da disciplina.
